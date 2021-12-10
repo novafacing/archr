@@ -95,7 +95,7 @@ class QEMUTracerAnalyzer(ContextAnalyzer):
 
     @contextlib.contextmanager
     def fire_context(self, record_trace=True, record_magic=False, save_core=False, record_file_maps=False, # pylint: disable=arguments-differ
-                     crash_addr=None, trace_bb_addr=None, taint=None, **kwargs): # pylint:disable=arguments-differ
+                     crash_addr=None, trace_bb_addr=None, taint=None, rebase=None, **kwargs): # pylint:disable=arguments-differ
         with self._target_mk_tmpdir() as tmpdir:
             tmp_prefix = tempfile.mktemp(dir='/tmp', prefix="tracer-")
             target_trace_filename = tmp_prefix + ".trace" if record_trace else None
@@ -109,7 +109,8 @@ class QEMUTracerAnalyzer(ContextAnalyzer):
                 coredump_dir=tmpdir,
                 crash_addr=crash_addr,
                 start_trace_addr=trace_bb_addr,
-                taint=taint)
+                taint=taint,
+                rebase=rebase)
             
             l.debug("launch QEMU with command: %s", ' '.join(target_cmd))
             r = QemuTraceResult()
@@ -251,7 +252,8 @@ class QEMUTracerAnalyzer(ContextAnalyzer):
         return qemu_variant
 
     def _build_command(self, trace_filename=None, magic_filename=None, coredump_dir=None,
-                       report_bad_args=None, crash_addr=None, start_trace_addr=None, taint=None):
+                       report_bad_args=None, crash_addr=None, start_trace_addr=None, taint=None
+                       rebase=None):
         """
         Here, we build the tracing command.
         """
@@ -272,6 +274,8 @@ class QEMUTracerAnalyzer(ContextAnalyzer):
             cmd_args += [ "-T", '0x{:x}:{}'.format(*start_trace_addr) ]
         if taint:
             cmd_args += [ "-M", taint.hex()]
+        if rebase:
+            cmd_args += [ "-B", rebase.hex()]
 
         #
         # Next, we build QEMU options.
