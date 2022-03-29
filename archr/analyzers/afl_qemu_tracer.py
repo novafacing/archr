@@ -154,43 +154,6 @@ class AFLQEMUTracerAnalyzer(ContextAnalyzer):
                 r.signal,
             )
 
-            if local_core_filename or crash_addr:
-                # choose the correct core dump to retrieve
-                with self._local_mk_tmpdir() as local_tmpdir:
-                    self.target.retrieve_into(tmpdir, local_tmpdir)
-                    target_cores = glob(join(local_tmpdir, "*", "qemu_*.core"))
-                    tmp_crash_core_path = None
-                    tmp_halfway_core_path = None
-
-                    for x in target_cores:
-                        if "crash" in x.rsplit("_")[-1]:
-                            tmp_crash_core_path = x
-                        if "coreaddr" in x.rsplit("_")[-1]:
-                            tmp_halfway_core_path = x
-
-                    if tmp_crash_core_path is None and len(target_cores) == 1:
-                        tmp_crash_core_path = target_cores[0]
-
-                    # sanity check core dumps
-                    if save_core and not tmp_crash_core_path:
-                        raise QEMUTracerError(
-                            "the target didn't crash inside qemu or no corefile was created!"
-                            + "Make sure you launch it correctly!\n"
-                            + "command: %s" % " ".join(target_cmd)
-                        )
-                    if crash_addr and not tmp_halfway_core_path:
-                        raise QEMUTracerError(
-                            "the target didn't generate a halfway core file!"
-                            + "command: %s" % " ".join(target_cmd)
-                        )
-
-                    if local_core_filename and tmp_crash_core_path:
-                        move(tmp_crash_core_path, local_core_filename)
-                    if local_halfway_core_filename and tmp_halfway_core_path:
-                        move(tmp_halfway_core_path, local_halfway_core_filename)
-                    r.core_path = local_core_filename
-                    r.halfway_core_path = local_halfway_core_filename
-
             if target_trace_filename:
                 trace = self.target.retrieve_contents(target_trace_filename)
                 trace_iter = self.line_iter(trace)
@@ -242,33 +205,6 @@ class AFLQEMUTracerAnalyzer(ContextAnalyzer):
 
                 endings = trace.rsplit(b"\n", 3)[1:3]
 
-                if r.crashed:
-                    # grab the taint_fd
-                    if not endings[0].startswith(
-                        b"qemu: last read marker was read through fd:"
-                    ):
-                        l.error(
-                            "Unexpected status line from qemu tracer. Cannot get the last read marker to set taint_fd. "
-                            "Please make sure you are using the latest afl-qemu-trace."
-                        )
-                    else:
-                        r.taint_fd = int(search(br"\[(\d+)\]", endings[0]).group(1))
-                        l.debug("Detected the tainted fd to be %s", r.taint_fd)
-                    # grab the faulting address
-                    lastline = endings[-1]
-                    if (
-                        lastline.startswith(b"Trace")
-                        or lastline.find(b"Segmentation") == -1
-                    ):
-                        l.warning(
-                            "Trace return code was less than zero, but the last line of the trace does not"
-                            "contain the uncaught exception error from qemu."
-                            "If using an older version of shellphish_qemu try using 'ulimit -Sc 0' or "
-                            "updating to a newer version of shellphish_qemu."
-                        )
-                    r.crash_address = int(lastline.split(b"[")[1].split(b"]")[0], 16)
-                    l.debug("Detected the crashing address at %s", hex(r.crash_address))
-
                 l.debug("Trace consists of %d basic blocks", len(r.trace))
 
                 if record_file_maps:
@@ -279,16 +215,6 @@ class AFLQEMUTracerAnalyzer(ContextAnalyzer):
 
                 # remove the trace file on the target
                 self.target.remove_path(target_trace_filename)
-
-            if target_magic_filename:
-                r.magic_contents = self.target.retrieve_contents(target_magic_filename)
-                if len(r.magic_contents) != 0x1000:
-                    raise QEMUTracerError(
-                        "Magic content read from QEMU improper size, should be a page in length"
-                    )
-
-                # remove the magic file on the target
-                self.target.remove_path(target_magic_filename)
 
     @staticmethod
     def qemu_variant(target_os, target_arch, record_trace):
