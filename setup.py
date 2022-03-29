@@ -24,7 +24,7 @@ setup(
         'docker',
         'nclib>=1.0.0rc3',
         'patchelf-wrapper',
-        'cle==9.0.12332',
+        'cle==9.1.12332',
         'ply'
     ],
     extras_require = {
