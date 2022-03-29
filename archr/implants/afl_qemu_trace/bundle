@@ -1,0 +1,13 @@
+#!/bin/bash
+
+[ $# -ge 1 ] || { echo "Usage: $0 /path/to/bundle_dir"; exit 1; }
+BUNDLE_DIR=$1
+
+FIRE_SCRIPT=${0//bundle/fire}
+QEMU_PATH=$(python3 -c "import pyafl_qemu_trace; print(pyafl_qemu_trace.qemu_base())")
+QEMU_LDD=$(ldd $QEMU_PATH/* 2>/dev/null)
+(echo "$QEMU_LDD" | grep -E '=>\snot found') && (echo "!!!!!!!!!!!!!!!!!!!!!! Missing dependencies") && exit 1
+QEMU_LIBS=$(echo "$QEMU_LDD" | grep "=>" | awk '{print $3}' | sort -u)
+QEMU_LD=$(ldd $QEMU_PATH/afl-qemu-trace-x86_64 2>/dev/null | fgrep ld-linux | awk '{print $1}')
+cp -L $QEMU_PATH/* $QEMU_LIBS $QEMU_LD $BUNDLE_DIR
+cp -L $FIRE_SCRIPT $BUNDLE_DIR/fire

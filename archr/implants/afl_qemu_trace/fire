@@ -1,0 +1,6 @@
+#!/bin/sh
+
+ulimit -c unlimited
+ulimit -f unlimited
+
+exec "$@"
