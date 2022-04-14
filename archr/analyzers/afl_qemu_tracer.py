@@ -1,3 +1,4 @@
+import collections
 from contextlib import contextmanager, suppress
 from glob import glob
 from logging import getLogger
@@ -6,13 +7,15 @@ from io import BytesIO
 from re import compile, search
 from shutil import move, rmtree
 from signal import SIGILL, SIGSEGV
-from subprocess import TimeoutExpired
+from subprocess import PIPE, TimeoutExpired
+import subprocess
 from tempfile import mkdtemp, mktemp
 from archr.analyzers import ContextAnalyzer
 from archr.analyzers.qemu_tracer import (
     QEMUTracerError,
     QemuTraceResult,
 )
+from archr.targets import LocalTarget
 from archr.utils import filter_strace_output, get_file_maps
 
 l = getLogger("archr.analyzers.afl_qemu_tracer")
