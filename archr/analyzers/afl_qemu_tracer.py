@@ -18,6 +18,7 @@ from archr.analyzers.qemu_tracer import (
 from archr.utils import filter_strace_output, get_file_maps
 
 l = getLogger("archr.analyzers.afl_qemu_tracer")
+
 _trace_old_re = compile(br"Trace (.*) \[(?P<addr>.*)\].*")
 _trace_new_re = compile(
     br"Trace (.*) \[(?P<something1>.*)\/(?P<addr>.*)\/(?P<flags>.*)\].*"

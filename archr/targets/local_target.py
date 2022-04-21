@@ -192,7 +192,7 @@ class AFLQEMULocalTarget(LocalTarget):
     AFL QEMU Local Target
     """
 
-    def run_command(
+    def _run_command(
         self,
         args,
         env,
