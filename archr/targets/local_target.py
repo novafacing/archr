@@ -195,7 +195,7 @@ class AFLQEMULocalTarget(LocalTarget):
     def _run_command(
         self,
         args,
-        env,
+        env=None,
         aslr=True,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
@@ -209,7 +209,7 @@ class AFLQEMULocalTarget(LocalTarget):
             # "setarch x86_64 -R elfname" will complain. it expects "setarch x86_64 -R ./elfname"
             args = ["setarch", "x86_64", "-R"] + args
 
-        l.debug(f"Running command: {' '.join(args)}")
+        l.info(f"Running command: {' '.join(args)}")
 
         if not hasattr(self, "results"):
             self.results = []
