@@ -10,7 +10,6 @@ from signal import SIGILL, SIGSEGV
 from subprocess import PIPE, TimeoutExpired
 import subprocess
 from tempfile import mkdtemp, mktemp
-from typing import Optional
 from archr.analyzers import ContextAnalyzer
 from archr.analyzers.qemu_tracer import (
     QEMUTracerError,
@@ -30,7 +29,7 @@ class AFLQEMUTracerAnalyzer(ContextAnalyzer):
     afl-qemu-trace analyzer
     """
 
-    REQUIRED_IMPLANT: Optional[str] = "afl_qemu_trace"
+    REQUIRED_IMPLANT = "afl_qemu_trace"
 
     def __init__(
         self,

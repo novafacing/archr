@@ -147,10 +147,8 @@ class LocalTarget(Target):
             and self.use_qemu
             and args[0] == os.path.basename(self.target_path)
         ):
-            qemu = QEMUTracerAnalyzer.qemu_variant(
-                self.target_os, self.target_arch, False
-            )
-            qemu_path = os.path.join(self.tmpwd, "shellphish_qemu", qemu)
+            qemu = f"afl-qemu-trace-{self.target_arch}"
+            qemu_path = os.path.join(self.tmpwd, "afl_qemu_trace", qemu)
             args = [qemu_path] + args
 
         return super().run_command(
