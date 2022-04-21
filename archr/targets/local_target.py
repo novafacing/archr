@@ -232,6 +232,3 @@ class AFLQEMULocalTarget(LocalTarget):
         rv = self.results[-1]
         l.info(f"command: {' '.join(args)} returned {rv}")
         return rv
-
-
-from ..analyzers import QEMUTracerAnalyzer

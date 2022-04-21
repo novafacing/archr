@@ -15,7 +15,6 @@ from archr.analyzers.qemu_tracer import (
     QEMUTracerError,
     QemuTraceResult,
 )
-from archr.targets import LocalTarget
 from archr.utils import filter_strace_output, get_file_maps
 
 l = getLogger("archr.analyzers.afl_qemu_tracer")
